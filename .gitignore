@@ -1,2 +1,5 @@
 # JVM heap dumps — too large for GitHub
 *.hprof
+
+# Local API keys — never publish
+api.txt
