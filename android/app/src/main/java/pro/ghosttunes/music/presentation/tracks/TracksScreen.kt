@@ -1163,13 +1163,27 @@ fun PlayerBottomSheet(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
                 IconButton(
-                    onClick = {},
+                    onClick = playerViewModel::toggleRepeat,
                     modifier = Modifier
-                        .background(BgDark3, RoundedCornerShape(14.dp))
-                        .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                        .background(
+                            if (state.repeatMode != 0) Purple.copy(alpha = 0.2f) else BgDark3,
+                            RoundedCornerShape(14.dp),
+                        )
+                        .border(
+                            BorderStroke(
+                                1.dp,
+                                if (state.repeatMode != 0) Purple else BorderColor,
+                            ),
+                            RoundedCornerShape(14.dp),
+                        )
                         .size(52.dp),
                 ) {
-                    Icon(Icons.Filled.Repeat, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
+                    Icon(
+                        Icons.Filled.Repeat,
+                        null,
+                        tint = if (state.repeatMode != 0) Purple else TextMuted2,
+                        modifier = Modifier.size(22.dp),
+                    )
                 }
                 if (!track.lyrics.isNullOrBlank()) {
                     IconButton(
@@ -1183,13 +1197,27 @@ fun PlayerBottomSheet(
                     }
                 }
                 IconButton(
-                    onClick = {},
+                    onClick = playerViewModel::toggleShuffle,
                     modifier = Modifier
-                        .background(BgDark3, RoundedCornerShape(14.dp))
-                        .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                        .background(
+                            if (state.shuffleEnabled) Purple.copy(alpha = 0.2f) else BgDark3,
+                            RoundedCornerShape(14.dp),
+                        )
+                        .border(
+                            BorderStroke(
+                                1.dp,
+                                if (state.shuffleEnabled) Purple else BorderColor,
+                            ),
+                            RoundedCornerShape(14.dp),
+                        )
                         .size(52.dp),
                 ) {
-                    Icon(Icons.Filled.Shuffle, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
+                    Icon(
+                        Icons.Filled.Shuffle,
+                        null,
+                        tint = if (state.shuffleEnabled) Purple else TextMuted2,
+                        modifier = Modifier.size(22.dp),
+                    )
                 }
             }
         }

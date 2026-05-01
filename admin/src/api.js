@@ -1,9 +1,9 @@
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-export const API_BASE    = 'http://localhost:8000/api/v1'
-export const API_KEY     = 'dev-api-key'
-export const ADMIN_LOGIN = 'admin'
-export const ADMIN_PASS  = 'admin'
+export const API_BASE    = import.meta.env.VITE_API_BASE    || 'http://localhost:8000/api/v1'
+export const API_KEY     = import.meta.env.VITE_API_KEY     || 'dev-api-key'
+export const ADMIN_LOGIN = import.meta.env.VITE_ADMIN_LOGIN || 'admin'
+export const ADMIN_PASS  = import.meta.env.VITE_ADMIN_PASS  || 'admin'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

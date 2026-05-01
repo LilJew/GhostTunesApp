@@ -169,6 +169,26 @@ input.vl::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;bo
 .bars b:nth-child(2){animation-delay:.15s}
 .bars b:nth-child(3){animation-delay:.3s}
 .tag{display:inline-block;background:var(--pg);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;color:var(--purple3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
+
+/* Lyrics karaoke */
+.lyr-overlay{display:none;position:fixed;inset:0;z-index:100}
+.lyr-overlay.open{display:flex;flex-direction:column}
+.lyr-bg{position:absolute;inset:0;background:rgba(5,5,12,.96);backdrop-filter:blur(32px)}
+.lyr-header{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;flex-shrink:0}
+.lyr-hinfo{display:flex;align-items:center;gap:12px}
+.lyr-himg{width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--bg4);flex-shrink:0}
+.lyr-himg-ph{width:42px;height:42px;border-radius:8px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.lyr-htitle{font-size:14px;font-weight:700}
+.lyr-hsub{font-size:11px;color:var(--muted);margin-top:1px}
+.lyr-close{background:rgba(255,255,255,.08);border:none;color:var(--muted2);cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:15px}
+.lyr-close:hover{background:rgba(255,255,255,.15);color:var(--text)}
+.lyr-scroll{position:relative;z-index:2;flex:1;overflow:hidden;display:flex;flex-direction:column;align-items:center;mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 72%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 18%,black 72%,transparent 100%)}
+.lyr-inner{width:100%;max-width:660px;padding:42vh 28px;display:flex;flex-direction:column;gap:6px;transition:transform .55s cubic-bezier(.25,.46,.45,.94)}
+.lyr-line{font-size:26px;font-weight:800;line-height:1.35;cursor:pointer;transition:all .4s cubic-bezier(.25,.46,.45,.94);color:rgba(255,255,255,.18);letter-spacing:-.3px;padding:4px 0;transform-origin:left center}
+.lyr-line.past{color:rgba(255,255,255,.32)}
+.lyr-line.active{color:#fff;font-size:32px;text-shadow:0 0 40px rgba(156,114,245,.6),0 0 80px rgba(156,114,245,.25);transform:scale(1.01)}
+.lyr-line.empty{height:24px}
+.lyr-line:hover{color:rgba(255,255,255,.55)}
 </style>
 </head>
 <body>
@@ -225,6 +245,9 @@ input.vl::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;bo
     <button class="blk" id="lbtn" onclick="toggleLike()">
       <svg id="lsvg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
     </button>
+    <button class="blk" id="lyrbtn" onclick="openLyrics()" title="Текст песни" style="display:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    </button>
   </div>
   <div class="bc">
     <div class="bcc">
@@ -247,6 +270,23 @@ input.vl::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;bo
 </div>
 </div>
 <audio id="aud" preload="none"></audio>
+
+<div class="lyr-overlay" id="lyrOverlay">
+  <div class="lyr-bg" id="lyrBg"></div>
+  <div class="lyr-header">
+    <div class="lyr-hinfo">
+      <div class="lyr-himg-ph" id="lyrImg">♪</div>
+      <div>
+        <div class="lyr-htitle" id="lyrTitle"></div>
+        <div class="lyr-hsub" id="lyrSub"></div>
+      </div>
+    </div>
+    <button class="lyr-close" onclick="closeLyrics()">✕</button>
+  </div>
+  <div class="lyr-scroll">
+    <div class="lyr-inner" id="lyrInner"></div>
+  </div>
+</div>
 
 <script>
 const API='http://localhost:8000/api/v1'
@@ -392,22 +432,22 @@ function renderAlbum(c,id){
   if(!alb)return
   const l=tracks.filter(t=>t.album_id===id)
   curList=l
-  const bgStyle=alb.cover_url?`background-image:url('${alb.cover_url}')`:'background:var(--bg4)'
   c.innerHTML=`
-    <div class="hero">
-      <div class="hbg" style="${bgStyle}"></div><div class="hgrad"></div>
-      ${alb.cover_url?`<img class="hcover" src="${alb.cover_url}" alt=""/>`:`<div class="hcover-ph">💿</div>`}
-      <div class="hinfo">
-        <div class="hbadge">Альбом</div>
-        <div class="htitle">${esc(alb.title)}</div>
-        <div class="hmeta"><span onclick="go('artist:'+encodeURIComponent('${esc(alb.artist)}'))" style="cursor:pointer;text-decoration:underline">${esc(alb.artist)}</span>
-        <div class="hacts">
-          <button class="pbtn" onclick="playAll()">▶ Слушать</button>
-          <button class="ibtn" onclick="shuf=true;playAll()" title="Перемешать"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+    <div class="scroll">
+      <div style="display:flex;gap:20px;align-items:flex-end;padding:10px 0 24px;position:relative;overflow:hidden;border-radius:12px;margin-bottom:16px">
+        <div style="position:absolute;inset:0;z-index:0;opacity:.3;${alb.cover_url?`background:url('${alb.cover_url}') center/cover`:'background:var(--bg4)'};filter:blur(50px) saturate(1.6)"></div>
+        <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(to top,var(--bg3) 0%,transparent 100%)"></div>
+        ${alb.cover_url?`<img src="${alb.cover_url}" alt="" style="width:148px;height:148px;border-radius:14px;object-fit:cover;flex-shrink:0;z-index:2;box-shadow:0 16px 44px rgba(0,0,0,.65)"/>`:`<div style="width:148px;height:148px;border-radius:14px;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-size:52px;flex-shrink:0;z-index:2">💿</div>`}
+        <div style="position:relative;z-index:2;min-width:0">
+          <div class="tag">Альбом</div>
+          <div style="font-size:28px;font-weight:900;letter-spacing:-.7px;line-height:1.05;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,.5)">${esc(alb.title)}</div>
+          <div style="font-size:13px;color:var(--muted2);margin-bottom:16px"><span onclick="go('artist:'+encodeURIComponent('${esc(alb.artist)}'))" style="cursor:pointer;color:var(--text);font-weight:600;text-decoration:underline">${esc(alb.artist)}</span>${alb.year?' · '+alb.year:''} · ${l.length} треков</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="pbtn" onclick="playAll()">▶ Слушать</button>
+            <button class="ibtn" onclick="shuf=true;playAll()" title="Перемешать"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="tlview">
       <div class="tlh"><span>#</span><span>Трек</span><span>Альбом</span><span style="text-align:right">Время</span></div>
       ${l.map((t,i)=>tRow(t,i+1)).join('')}
     </div>`
@@ -542,6 +582,7 @@ function updBar(){
   const w=document.getElementById('bimg')
   w.outerHTML=cur.cover_url?`<img class="bimg" id="bimg" src="${cur.cover_url}" alt=""/>`:`<div class="bimg-ph" id="bimg">♪</div>`
   document.title=cur.title+' — GhostTunes'
+  document.getElementById('lyrbtn').style.display=cur.lyrics?'flex':'none'
   updPP();updLike()
 }
 function updPP(){const i=document.getElementById('ppico');if(!i)return;i.innerHTML=isPlaying?`<rect x="5" y="4" width="4" height="16" rx="1.5" fill="currentColor"/><rect x="15" y="4" width="4" height="16" rx="1.5" fill="currentColor"/>`:`<polygon points="5 3 19 12 5 21 5 3"/>`}
@@ -555,10 +596,101 @@ function refRows(){
     if(pi){pi.style.display=isc?'flex':'';pi.style.color=isc?'var(--purple)':'var(--text)';pi.innerHTML=isc&&isPlaying?`<div class="bars"><b></b><b></b><b></b></div>`:`<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`}
   })
 }
-aud.addEventListener('timeupdate',()=>{if(!aud.duration)return;const p=(aud.currentTime/aud.duration)*100;document.getElementById('pf').style.width=p+'%';if(!isSeeking)document.querySelector('.sk').value=p;document.getElementById('tc').textContent=fmt(aud.currentTime);document.getElementById('td').textContent=fmt(aud.duration)})
+aud.addEventListener('timeupdate',()=>{if(!aud.duration)return;const p=(aud.currentTime/aud.duration)*100;document.getElementById('pf').style.width=p+'%';if(!isSeeking)document.querySelector('.sk').value=p;document.getElementById('tc').textContent=fmt(aud.currentTime);document.getElementById('td').textContent=fmt(aud.duration);updLyrLine()})
 aud.addEventListener('ended',()=>{if(rep===2)aud.play();else nextT()})
 aud.addEventListener('play',()=>{isPlaying=true;updPP();refRows()})
 aud.addEventListener('pause',()=>{isPlaying=false;updPP();refRows()})
+// lyrParsed: [{time:seconds, text:string}] for LRC, or [{time:null, text}] for plain
+let lyrParsed=[],lyrActive=-1,lyrOpen=false,lyrIsLrc=false
+
+function parseLyrics(raw){
+  const lrcRe=/^\[(\d{1,2}):(\d{2})(?:[.:,](\d{1,3}))?\](.*)/
+  const lines=raw.split('\n')
+  const parsed=[]
+  let hasTimestamps=false
+  for(const line of lines){
+    const m=line.match(lrcRe)
+    if(m){
+      hasTimestamps=true
+      const min=parseInt(m[1]),sec=parseInt(m[2]),ms=parseInt((m[3]||'0').padEnd(3,'0'))
+      parsed.push({time:min*60+sec+ms/1000,text:(m[4]||'').trim()})
+    }
+  }
+  if(hasTimestamps){
+    parsed.sort((a,b)=>a.time-b.time)
+    return{isLrc:true,lines:parsed}
+  }
+  // plain text
+  return{isLrc:false,lines:lines.map(t=>({time:null,text:t}))}
+}
+
+function openLyrics(){
+  if(!cur||!cur.lyrics)return
+  lyrOpen=true
+  document.getElementById('lyrTitle').textContent=cur.title
+  document.getElementById('lyrSub').textContent=cur.artist
+  const img=document.getElementById('lyrImg')
+  img.outerHTML=cur.cover_url
+    ?`<img class="lyr-himg" id="lyrImg" src="${cur.cover_url}" alt=""/>`
+    :`<div class="lyr-himg-ph" id="lyrImg">♪</div>`
+  const{isLrc,lines}=parseLyrics(cur.lyrics)
+  lyrParsed=lines
+  lyrIsLrc=isLrc
+  lyrActive=-1
+  const inner=document.getElementById('lyrInner')
+  inner.style.transform='translateY(0)'
+  inner.innerHTML=lyrParsed.map((l,i)=>
+    `<div class="lyr-line${l.text.trim()===''?' empty':''}" id="ll${i}" onclick="seekToLine(${i})">${l.text.trim()===''?'&nbsp;':escLyr(l.text)}</div>`
+  ).join('')
+  if(!isLrc){
+    // plain: show static notice
+    inner.insertAdjacentHTML('afterbegin','<div style="font-size:11px;color:var(--muted);text-align:center;padding-bottom:24px;font-weight:500">Текст без таймстампов — синхронизация недоступна</div>')
+  }
+  document.getElementById('lyrOverlay').classList.add('open')
+  updLyrLine()
+}
+function closeLyrics(){
+  lyrOpen=false
+  document.getElementById('lyrOverlay').classList.remove('open')
+}
+function escLyr(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function seekToLine(i){
+  if(!lyrParsed[i])return
+  if(lyrIsLrc&&lyrParsed[i].time!=null){aud.currentTime=lyrParsed[i].time;return}
+  if(aud.duration)aud.currentTime=(i/lyrParsed.length)*aud.duration
+}
+function updLyrLine(){
+  if(!lyrOpen||!lyrParsed.length)return
+  let idx=0
+  if(lyrIsLrc){
+    const t=aud.currentTime
+    for(let i=lyrParsed.length-1;i>=0;i--){
+      if(lyrParsed[i].time!=null&&t>=lyrParsed[i].time){idx=i;break}
+    }
+  } else {
+    if(!aud.duration)return
+    idx=Math.min(Math.floor((aud.currentTime/aud.duration)*lyrParsed.length),lyrParsed.length-1)
+  }
+  if(idx===lyrActive)return
+  lyrActive=idx
+  const inner=document.getElementById('lyrInner')
+  if(!inner)return
+  lyrParsed.forEach((_,i)=>{
+    const el=document.getElementById('ll'+i)
+    if(!el)return
+    el.classList.remove('active','past')
+    if(i<idx)el.classList.add('past')
+    else if(i===idx)el.classList.add('active')
+  })
+  const activeEl=document.getElementById('ll'+idx)
+  if(activeEl){
+    const scrollArea=inner.parentElement
+    const elTop=activeEl.offsetTop
+    const shift=elTop-scrollArea.clientHeight*0.42
+    inner.style.transform=`translateY(${-shift}px)`
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLyrics()})
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')
 const dur=s=>{if(!s)return'0:00';return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 const fmt=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')

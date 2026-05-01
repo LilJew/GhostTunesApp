@@ -434,6 +434,40 @@ function TrackList({ tracks, albums, onRefresh }) {
 
 // ─── Album List (с редактированием и удалением) ───────────────────────────────
 
+function LyricsModal({ track, onClose, onSaved }) {
+  const [lyrics, setLyrics] = useState(track.lyrics || '')
+  const [saving, setSaving] = useState(false)
+  const save = async () => {
+    setSaving(true)
+    await apiPatch(`/tracks/${track.id}`, { lyrics: lyrics || null })
+    setSaving(false)
+    onSaved()
+    onClose()
+  }
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+         onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ background: '#1e1e2e', borderRadius: 12, padding: 24, width: 560, maxWidth: '90vw', maxHeight: '80vh', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>{track.title}</div>
+          <button style={{ ...s.btnSm, background: '#333', padding: '4px 10px' }} onClick={onClose}>✕</button>
+        </div>
+        <textarea
+          style={{ ...s.input, margin: 0, flex: 1, minHeight: 300, resize: 'vertical', fontFamily: 'inherit', fontSize: 13 }}
+          placeholder="Текст песни..."
+          value={lyrics}
+          onChange={e => setLyrics(e.target.value)}
+          autoFocus
+        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={s.btn} onClick={save} disabled={saving}>{saving ? 'Сохраняем...' : '💾 Сохранить'}</button>
+          <button style={s.btnOutline} onClick={onClose}>Отмена</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AlbumList({ albums, tracks, onRefresh }) {
   const [editAlbum, setEditAlbum]   = useState(null)
   const [editTitle, setEditTitle]   = useState('')
@@ -441,6 +475,7 @@ function AlbumList({ albums, tracks, onRefresh }) {
   const [editYear, setEditYear]     = useState('')
   const [saving, setSaving]         = useState(false)
   const [msg, setMsg]               = useState(null)
+  const [lyricsTrack, setLyricsTrack] = useState(null)
 
   const startEdit = a => {
     setEditAlbum(a); setEditTitle(a.title)
@@ -461,7 +496,7 @@ function AlbumList({ albums, tracks, onRefresh }) {
   }
 
   const deleteAlbum = async a => {
-    const albumTracks = tracks.filter(t => t.album_id === a.id)
+    const albumTracks = tracks.filter(t => String(t.album_id) === String(a.id))
     const confirmMsg  = albumTracks.length > 0
       ? `Удалить альбом «${a.title}»?\nТакже будут удалены ${albumTracks.length} треков.`
       : `Удалить альбом «${a.title}»?`
@@ -471,9 +506,15 @@ function AlbumList({ albums, tracks, onRefresh }) {
     onRefresh()
   }
 
+  const albumTracks = editAlbum ? tracks.filter(t => String(t.album_id) === String(editAlbum.id)) : []
+
   return (
     <div style={s.card}>
       <h2 style={s.cardTitle}>💿 Альбомы ({albums.length})</h2>
+
+      {lyricsTrack && (
+        <LyricsModal track={lyricsTrack} onClose={() => setLyricsTrack(null)} onSaved={onRefresh} />
+      )}
 
       {editAlbum && (
         <div style={s.editPanel}>
@@ -486,13 +527,31 @@ function AlbumList({ albums, tracks, onRefresh }) {
             <button style={s.btn} onClick={saveAlbum} disabled={saving}>{saving ? 'Сохраняем...' : '💾 Сохранить'}</button>
             <button style={s.btnOutline} onClick={() => setEditAlbum(null)}>Отмена</button>
           </div>
+
+          {albumTracks.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 13, color: '#aaa', marginBottom: 8 }}>Треки в альбоме ({albumTracks.length})</div>
+              {albumTracks.map(t => (
+                <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #2a2a3e' }}>
+                  <div>
+                    <span style={{ fontSize: 13 }}>{t.title}</span>
+                    <span style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>{formatDur(t.duration_seconds)}</span>
+                    {t.lyrics && <span style={{ color: '#7ddc8b', fontSize: 11, marginLeft: 8 }}>📝</span>}
+                  </div>
+                  <button style={{ ...s.btnSm, fontSize: 11, padding: '3px 10px' }} onClick={() => setLyricsTrack(t)}>
+                    {t.lyrics ? '✏️ текст' : '+ текст'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       <div style={s.albumGrid}>
         {albums.length === 0 && <div style={s.emptyMsg}>Альбомов пока нет</div>}
         {albums.map(a => {
-          const trackCount = tracks.filter(t => t.album_id === a.id).length
+          const trackCount = tracks.filter(t => String(t.album_id) === String(a.id)).length
           return (
             <div key={a.id} style={s.albumCard}>
               {a.cover_url
