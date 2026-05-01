@@ -1,0 +1,51 @@
+﻿services:
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: music_db
+      MYSQL_USER: music_user
+      MYSQL_PASSWORD: music_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: mysql+aiomysql://music_user:music_pass@db:3306/music_db
+      SECRET_KEY: dev-secret-key
+      API_KEY: dev-api-key
+      MUSIC_STORAGE_PATH: /var/music
+      BASE_URL: http://localhost:8000
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: admin
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3000
+    volumes:
+      - music_files:/var/music
+    depends_on:
+      db:
+        condition: service_healthy
+
+  player:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./player:/usr/share/nginx/html:ro
+
+volumes:
+  mysql_data:
+  music_files:
