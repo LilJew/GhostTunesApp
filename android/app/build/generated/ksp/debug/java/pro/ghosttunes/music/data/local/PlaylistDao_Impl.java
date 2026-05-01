@@ -274,6 +274,7 @@ public final class PlaylistDao_Impl implements PlaylistDao {
           final int _cursorIndexOfAlbumCoverUrl = CursorUtil.getColumnIndexOrThrow(_cursor, "albumCoverUrl");
           final int _cursorIndexOfUserRating = CursorUtil.getColumnIndexOrThrow(_cursor, "userRating");
           final int _cursorIndexOfIsFavorite = CursorUtil.getColumnIndexOrThrow(_cursor, "isFavorite");
+          final int _cursorIndexOfLyrics = CursorUtil.getColumnIndexOrThrow(_cursor, "lyrics");
           final int _cursorIndexOfCachedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "cachedAt");
           final List<TrackEntity> _result = new ArrayList<TrackEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
@@ -322,9 +323,15 @@ public final class PlaylistDao_Impl implements PlaylistDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsFavorite);
             _tmpIsFavorite = _tmp != 0;
+            final String _tmpLyrics;
+            if (_cursor.isNull(_cursorIndexOfLyrics)) {
+              _tmpLyrics = null;
+            } else {
+              _tmpLyrics = _cursor.getString(_cursorIndexOfLyrics);
+            }
             final long _tmpCachedAt;
             _tmpCachedAt = _cursor.getLong(_cursorIndexOfCachedAt);
-            _item = new TrackEntity(_tmpId,_tmpTitle,_tmpArtist,_tmpDurationSeconds,_tmpFileUrl,_tmpCoverUrl,_tmpAlbumId,_tmpAlbumTitle,_tmpAlbumCoverUrl,_tmpUserRating,_tmpIsFavorite,_tmpCachedAt);
+            _item = new TrackEntity(_tmpId,_tmpTitle,_tmpArtist,_tmpDurationSeconds,_tmpFileUrl,_tmpCoverUrl,_tmpAlbumId,_tmpAlbumTitle,_tmpAlbumCoverUrl,_tmpUserRating,_tmpIsFavorite,_tmpLyrics,_tmpCachedAt);
             _result.add(_item);
           }
           return _result;

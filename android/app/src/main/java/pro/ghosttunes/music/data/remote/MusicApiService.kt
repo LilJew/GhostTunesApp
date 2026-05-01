@@ -16,6 +16,7 @@ data class TrackDto(
     @SerializedName("user_rating") val userRating: String?,
     @SerializedName("is_favorite") val isFavorite: Boolean = false,
     @SerializedName("created_at") val createdAt: String,
+    val lyrics: String? = null,
 )
 
 data class AlbumDto(

@@ -11,6 +11,7 @@ data class Track(
     val albumTitle: String?,
     val userRating: String?,
     val isFavorite: Boolean = false,
+    val lyrics: String? = null,
 ) {
     val durationFormatted: String
         get() {

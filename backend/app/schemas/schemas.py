@@ -35,6 +35,7 @@ class TrackBase(BaseModel):
     file_url: str
     cover_url: Optional[str] = None
     album_id: Optional[str] = None
+    lyrics: Optional[str] = None
 
 
 class TrackCreate(TrackBase):
@@ -47,6 +48,7 @@ class TrackUpdate(BaseModel):
     artist: Optional[str] = None
     cover_url: Optional[str] = None
     album_id: Optional[str] = None
+    lyrics: Optional[str] = None
 
 
 class TrackOut(TrackBase):

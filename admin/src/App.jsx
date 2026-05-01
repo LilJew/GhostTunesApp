@@ -360,11 +360,12 @@ function TrackList({ tracks, albums, onRefresh }) {
   const [editTitle, setEditTitle]   = useState('')
   const [editArtist, setEditArtist] = useState('')
   const [editAlbum, setEditAlbum]   = useState('')
+  const [editLyrics, setEditLyrics] = useState('')
   const [search, setSearch]         = useState('')
 
-  const startEdit = t => { setEditId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditAlbum(t.album_id || '') }
+  const startEdit = t => { setEditId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditAlbum(t.album_id || ''); setEditLyrics(t.lyrics || '') }
   const saveEdit  = async id => {
-    await apiPatch(`/tracks/${id}`, { title: editTitle, artist: editArtist, album_id: editAlbum || null })
+    await apiPatch(`/tracks/${id}`, { title: editTitle, artist: editArtist, album_id: editAlbum || null, lyrics: editLyrics || null })
     setEditId(null); onRefresh()
   }
   const del = async id => {
@@ -389,15 +390,23 @@ function TrackList({ tracks, albums, onRefresh }) {
           <div key={t.id} style={s.trackRow}>
             {t.cover_url ? <img src={t.cover_url} alt="" style={s.cover} /> : <div style={s.coverPlaceholder}>🎵</div>}
             {editId === t.id ? (
-              <div style={s.editRow}>
-                <input style={{ ...s.input, margin: 0, flex: 1 }} value={editTitle} onChange={e => setEditTitle(e.target.value)} />
-                <input style={{ ...s.input, margin: 0, flex: 1 }} value={editArtist} onChange={e => setEditArtist(e.target.value)} />
-                <select style={s.select} value={editAlbum} onChange={e => setEditAlbum(e.target.value)}>
-                  <option value="">— Без альбома —</option>
-                  {albums.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
-                </select>
-                <button style={s.btnSm} onClick={() => saveEdit(t.id)}>💾</button>
-                <button style={{ ...s.btnSm, background: '#333' }} onClick={() => setEditId(null)}>✕</button>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={s.editRow}>
+                  <input style={{ ...s.input, margin: 0, flex: 1 }} value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                  <input style={{ ...s.input, margin: 0, flex: 1 }} value={editArtist} onChange={e => setEditArtist(e.target.value)} />
+                  <select style={s.select} value={editAlbum} onChange={e => setEditAlbum(e.target.value)}>
+                    <option value="">— Без альбома —</option>
+                    {albums.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
+                  </select>
+                  <button style={s.btnSm} onClick={() => saveEdit(t.id)}>💾</button>
+                  <button style={{ ...s.btnSm, background: '#333' }} onClick={() => setEditId(null)}>✕</button>
+                </div>
+                <textarea
+                  style={{ ...s.input, margin: 0, minHeight: 80, resize: 'vertical', fontFamily: 'inherit' }}
+                  placeholder="Текст песни..."
+                  value={editLyrics}
+                  onChange={e => setEditLyrics(e.target.value)}
+                />
               </div>
             ) : (
               <div style={s.trackInfo}>
@@ -406,6 +415,7 @@ function TrackList({ tracks, albums, onRefresh }) {
                   {t.artist}
                   {t.album && <span style={s.albumBadge}>{t.album.title}</span>}
                   <span style={s.duration}>{formatDur(t.duration_seconds)}</span>
+                  {t.lyrics && <span style={{ color: '#7ddc8b', fontSize: 11 }}>📝 текст</span>}
                 </div>
               </div>
             )}
@@ -512,11 +522,12 @@ function SinglesList({ tracks, albums, onRefresh }) {
   const [editTitle, setEditTitle]   = useState('')
   const [editArtist, setEditArtist] = useState('')
   const [editAlbum, setEditAlbum]   = useState('')
+  const [editLyrics, setEditLyrics] = useState('')
   const [search, setSearch]         = useState('')
 
-  const startEdit = t => { setEditId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditAlbum('') }
+  const startEdit = t => { setEditId(t.id); setEditTitle(t.title); setEditArtist(t.artist); setEditAlbum(''); setEditLyrics(t.lyrics || '') }
   const saveEdit  = async id => {
-    await apiPatch(`/tracks/${id}`, { title: editTitle, artist: editArtist, album_id: editAlbum || null })
+    await apiPatch(`/tracks/${id}`, { title: editTitle, artist: editArtist, album_id: editAlbum || null, lyrics: editLyrics || null })
     setEditId(null); onRefresh()
   }
   const del = async id => {
@@ -541,15 +552,23 @@ function SinglesList({ tracks, albums, onRefresh }) {
           <div key={t.id} style={s.trackRow}>
             {t.cover_url ? <img src={t.cover_url} alt="" style={s.cover} /> : <div style={s.coverPlaceholder}>🎵</div>}
             {editId === t.id ? (
-              <div style={s.editRow}>
-                <input style={{ ...s.input, margin: 0, flex: 1 }} value={editTitle} onChange={e => setEditTitle(e.target.value)} />
-                <input style={{ ...s.input, margin: 0, flex: 1 }} value={editArtist} onChange={e => setEditArtist(e.target.value)} />
-                <select style={s.select} value={editAlbum} onChange={e => setEditAlbum(e.target.value)}>
-                  <option value="">— Без альбома —</option>
-                  {albums.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
-                </select>
-                <button style={s.btnSm} onClick={() => saveEdit(t.id)}>💾</button>
-                <button style={{ ...s.btnSm, background: '#333' }} onClick={() => setEditId(null)}>✕</button>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={s.editRow}>
+                  <input style={{ ...s.input, margin: 0, flex: 1 }} value={editTitle} onChange={e => setEditTitle(e.target.value)} />
+                  <input style={{ ...s.input, margin: 0, flex: 1 }} value={editArtist} onChange={e => setEditArtist(e.target.value)} />
+                  <select style={s.select} value={editAlbum} onChange={e => setEditAlbum(e.target.value)}>
+                    <option value="">— Без альбома —</option>
+                    {albums.map(a => <option key={a.id} value={a.id}>{a.title}</option>)}
+                  </select>
+                  <button style={s.btnSm} onClick={() => saveEdit(t.id)}>💾</button>
+                  <button style={{ ...s.btnSm, background: '#333' }} onClick={() => setEditId(null)}>✕</button>
+                </div>
+                <textarea
+                  style={{ ...s.input, margin: 0, minHeight: 80, resize: 'vertical', fontFamily: 'inherit' }}
+                  placeholder="Текст песни..."
+                  value={editLyrics}
+                  onChange={e => setEditLyrics(e.target.value)}
+                />
               </div>
             ) : (
               <div style={s.trackInfo}>
@@ -557,6 +576,7 @@ function SinglesList({ tracks, albums, onRefresh }) {
                 <div style={s.trackMeta}>
                   {t.artist}
                   <span style={s.duration}>{formatDur(t.duration_seconds)}</span>
+                  {t.lyrics && <span style={{ color: '#7ddc8b', fontSize: 11 }}>📝 текст</span>}
                 </div>
               </div>
             )}

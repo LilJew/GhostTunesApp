@@ -33,14 +33,14 @@ public final class MusicDatabase_Impl extends MusicDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `tracks` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `durationSeconds` INTEGER NOT NULL, `fileUrl` TEXT NOT NULL, `coverUrl` TEXT, `albumId` TEXT, `albumTitle` TEXT, `albumCoverUrl` TEXT, `userRating` TEXT, `isFavorite` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `tracks` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `durationSeconds` INTEGER NOT NULL, `fileUrl` TEXT NOT NULL, `coverUrl` TEXT, `albumId` TEXT, `albumTitle` TEXT, `albumCoverUrl` TEXT, `userRating` TEXT, `isFavorite` INTEGER NOT NULL, `lyrics` TEXT, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `playlists` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `isPublic` INTEGER NOT NULL, `trackCount` INTEGER NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `playlist_track_cross` (`playlistId` TEXT NOT NULL, `trackId` TEXT NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`playlistId`, `trackId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '43490c8e9734b82e3eb2147c19b92238')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c8a44fd6864c17f1721913e712aeed64')");
       }
 
       @Override
@@ -91,7 +91,7 @@ public final class MusicDatabase_Impl extends MusicDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsTracks = new HashMap<String, TableInfo.Column>(12);
+        final HashMap<String, TableInfo.Column> _columnsTracks = new HashMap<String, TableInfo.Column>(13);
         _columnsTracks.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTracks.put("title", new TableInfo.Column("title", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTracks.put("artist", new TableInfo.Column("artist", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -103,6 +103,7 @@ public final class MusicDatabase_Impl extends MusicDatabase {
         _columnsTracks.put("albumCoverUrl", new TableInfo.Column("albumCoverUrl", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTracks.put("userRating", new TableInfo.Column("userRating", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTracks.put("isFavorite", new TableInfo.Column("isFavorite", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsTracks.put("lyrics", new TableInfo.Column("lyrics", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsTracks.put("cachedAt", new TableInfo.Column("cachedAt", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysTracks = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesTracks = new HashSet<TableInfo.Index>(0);
@@ -142,7 +143,7 @@ public final class MusicDatabase_Impl extends MusicDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "43490c8e9734b82e3eb2147c19b92238", "4a0056851f8bba625726d76c474f4c2f");
+    }, "c8a44fd6864c17f1721913e712aeed64", "75c43a15dfe63046b1ea17a33a53c88f");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

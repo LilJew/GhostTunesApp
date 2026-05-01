@@ -457,15 +457,15 @@ public final class DaggerGhostTunesApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String pro_ghosttunes_music_presentation_tracks_TracksViewModel = "pro.ghosttunes.music.presentation.tracks.TracksViewModel";
-
       static String pro_ghosttunes_music_presentation_player_PlayerViewModel = "pro.ghosttunes.music.presentation.player.PlayerViewModel";
 
-      @KeepFieldType
-      TracksViewModel pro_ghosttunes_music_presentation_tracks_TracksViewModel2;
+      static String pro_ghosttunes_music_presentation_tracks_TracksViewModel = "pro.ghosttunes.music.presentation.tracks.TracksViewModel";
 
       @KeepFieldType
       PlayerViewModel pro_ghosttunes_music_presentation_player_PlayerViewModel2;
+
+      @KeepFieldType
+      TracksViewModel pro_ghosttunes_music_presentation_tracks_TracksViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {

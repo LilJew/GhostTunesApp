@@ -47,6 +47,7 @@ fun TrackDto.toEntity() = TrackEntity(
     coverUrl = normalizeMediaUrl(coverUrl), albumId = albumId,
     albumTitle = album?.title, albumCoverUrl = normalizeMediaUrl(album?.coverUrl),
     userRating = userRating, isFavorite = isFavorite,
+    lyrics = lyrics,
 )
 
 fun TrackEntity.toDomain() = Track(
@@ -54,6 +55,7 @@ fun TrackEntity.toDomain() = Track(
     durationSeconds = durationSeconds, fileUrl = normalizeMediaUrl(fileUrl) ?: fileUrl,
     coverUrl = normalizeMediaUrl(coverUrl ?: albumCoverUrl), albumId = albumId,
     albumTitle = albumTitle, userRating = userRating, isFavorite = isFavorite,
+    lyrics = lyrics,
 )
 
 fun PlaylistDto.toEntity() = PlaylistEntity(

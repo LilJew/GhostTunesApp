@@ -6,7 +6,7 @@ from enum import Enum as PyEnum
 
 from sqlalchemy import (
     BigInteger, Boolean, DateTime, Enum, ForeignKey,
-    Integer, String, UniqueConstraint, func,
+    Integer, String, Text, UniqueConstraint, func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -44,6 +44,7 @@ class Track(Base):
     album_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("albums.id", ondelete="SET NULL"), nullable=True
     )
+    lyrics: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 

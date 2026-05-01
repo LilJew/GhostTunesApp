@@ -16,6 +16,7 @@ data class TrackEntity(
     val albumCoverUrl: String?,
     val userRating: String?,
     val isFavorite: Boolean = false,
+    val lyrics: String? = null,
     val cachedAt: Long = System.currentTimeMillis(),
 )
 
@@ -90,7 +91,7 @@ interface PlaylistDao {
 
 @Database(
     entities = [TrackEntity::class, PlaylistEntity::class, PlaylistTrackCrossRef::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class MusicDatabase : RoomDatabase() {

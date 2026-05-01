@@ -1,6 +1,11 @@
 package pro.ghosttunes.music.presentation.tracks
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -33,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import pro.ghosttunes.music.domain.model.Album
@@ -1025,6 +1032,7 @@ fun PlayerBottomSheet(
 ) {
     val state by playerViewModel.playerState.collectAsState()
     val track = state.currentTrack ?: return
+    var showLyrics by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1161,27 +1169,51 @@ fun PlayerBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                listOf(
-                    Icons.Filled.Repeat to "Повтор",
-                    Icons.Filled.TextFields to "Текст",
-                    Icons.Filled.Shuffle to "Перемешать",
-                ).forEach { (icon, _) ->
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .background(BgDark3, RoundedCornerShape(14.dp))
+                        .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                        .size(52.dp),
+                ) {
+                    Icon(Icons.Filled.Repeat, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
+                }
+                if (!track.lyrics.isNullOrBlank()) {
                     IconButton(
-                        onClick = {},
+                        onClick = { showLyrics = true },
                         modifier = Modifier
                             .background(BgDark3, RoundedCornerShape(14.dp))
                             .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
                             .size(52.dp),
                     ) {
-                        Icon(icon, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
+                        Icon(Icons.Filled.TextFields, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
                     }
+                }
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier
+                        .background(BgDark3, RoundedCornerShape(14.dp))
+                        .border(1.dp, BorderColor, RoundedCornerShape(14.dp))
+                        .size(52.dp),
+                ) {
+                    Icon(Icons.Filled.Shuffle, null, tint = TextMuted2, modifier = Modifier.size(22.dp))
                 }
             }
         }
     }
+
+    if (showLyrics) {
+        LyricsOverlay(
+            title = track.title,
+            artist = track.artist,
+            lyrics = track.lyrics ?: "",
+            coverUrl = track.coverUrl,
+            onDismiss = { showLyrics = false },
+        )
+    }
 }
 
-// ── Диалоги плейлистов ────────────────────────────────────────────────────────
+// ── Текст песни (MusixMatch-style Dialog)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToPlaylistSheet(
@@ -1249,4 +1281,159 @@ fun CreatePlaylistDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
 fun formatMs(ms: Long): String {
     val totalSec = ms / 1000
     return "%d:%02d".format(totalSec / 60, totalSec % 60)
+}
+
+@Composable
+private fun LyricsOverlay(
+    title: String,
+    artist: String,
+    lyrics: String,
+    coverUrl: String?,
+    onDismiss: () -> Unit,
+) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) { visible = true }
+    LaunchedEffect(visible) {
+        if (!visible) {
+            kotlinx.coroutines.delay(300)
+            onDismiss()
+        }
+    }
+
+    Dialog(
+        onDismissRequest = { visible = false },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
+    ) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(tween(300)) + slideInVertically(
+                animationSpec = tween(400, easing = FastOutSlowInEasing),
+                initialOffsetY = { it },
+            ),
+            exit = fadeOut(tween(250)) + slideOutVertically(
+                animationSpec = tween(300, easing = FastOutSlowInEasing),
+                targetOffsetY = { it },
+            ),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF0D0D1A), Color(0xFF0A0A12), Color(0xFF080810)),
+                        ),
+                    ),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .systemBarsPadding()
+                        .padding(horizontal = 20.dp),
+                ) {
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconButton(
+                            onClick = { visible = false },
+                            modifier = Modifier.size(40.dp),
+                        ) {
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                null,
+                                tint = TextPrimary,
+                                modifier = Modifier.size(28.dp),
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            "Текст песни",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = PurpleLight,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = { visible = false },
+                            modifier = Modifier.size(40.dp),
+                        ) {
+                            Icon(Icons.Filled.Close, null, tint = TextMuted2, modifier = Modifier.size(20.dp))
+                        }
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Text(
+                        title,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextPrimary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        artist,
+                        fontSize = 15.sp,
+                        color = TextMuted2,
+                    )
+
+                    Spacer(Modifier.height(28.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                    ) {
+                        val scrollState = rememberScrollState()
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState),
+                        ) {
+                            Text(
+                                lyrics,
+                                fontSize = 17.sp,
+                                color = TextPrimary.copy(alpha = 0.85f),
+                                lineHeight = 30.sp,
+                                letterSpacing = 0.3.sp,
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .align(Alignment.TopCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(Color(0xFF0D0D1A), Color.Transparent),
+                                    ),
+                                ),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(60.dp)
+                                .align(Alignment.BottomCenter)
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(Color.Transparent, Color(0xFF080810)),
+                                    ),
+                                ),
+                        )
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+                }
+            }
+        }
+    }
 }
