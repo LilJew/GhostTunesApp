@@ -24,10 +24,10 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       API_KEY: ${API_KEY}
       MUSIC_STORAGE_PATH: /var/music
-      BASE_URL: https://ghosttunes.pro
+      BASE_URL: https://ghosttune.pro
       ADMIN_LOGIN: ${ADMIN_LOGIN}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      ALLOWED_ORIGINS: https://ghosttunes.pro,https://admin.ghosttunes.pro
+      ALLOWED_ORIGINS: https://ghosttune.pro,https://admin.ghosttune.pro
     volumes:
       - music_files:/var/music
     depends_on:

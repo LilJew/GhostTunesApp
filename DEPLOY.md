@@ -1,4 +1,4 @@
-# Деплой на ghosttunes.pro
+# Деплой на ghosttune.pro
 
 Проект деплоится с локальной машины одной командой через `deploy.sh`.
 Скрипт сам устанавливает Docker, копирует файлы, получает SSL-сертификат и запускает контейнеры.
@@ -29,7 +29,7 @@ ADMIN_PASSWORD=ваш-пароль-админки
 nano admin/.env.production
 ```
 ```
-VITE_API_BASE=https://ghosttunes.pro/api/v1
+VITE_API_BASE=https://ghosttune.pro/api/v1
 VITE_API_KEY=ваш-api-ключ             # тот же что API_KEY в .env
 VITE_ADMIN_LOGIN=admin
 VITE_ADMIN_PASS=ваш-пароль-админки    # тот же что ADMIN_PASSWORD в .env
@@ -100,9 +100,9 @@ deploy.bat root@95.163.12.45
 
 DNS должен быть настроен **до** запуска скрипта (нужен для SSL):
 ```
-ghosttunes.pro       A  →  IP-сервера
-www.ghosttunes.pro   A  →  IP-сервера
-admin.ghosttunes.pro A  →  IP-сервера
+ghosttune.pro       A  →  IP-сервера
+www.ghosttune.pro   A  →  IP-сервера
+admin.ghosttune.pro A  →  IP-сервера
 ```
 
 ---
@@ -137,7 +137,7 @@ docker run --rm \
   -v $(pwd)/certbot/www:/var/www/certbot \
   -p 80:80 \
   certbot/certbot certonly --standalone \
-  -d ghosttunes.pro -d www.ghosttunes.pro -d admin.ghosttunes.pro \
+  -d ghosttune.pro -d www.ghosttune.pro -d admin.ghosttune.pro \
   --email your@email.com --agree-tos --no-eff-email
 
 # 4. Запустить
@@ -169,6 +169,6 @@ docker compose -f /opt/ghosttunes/docker-compose.yml restart api
 
 | URL | Назначение |
 |-----|-----------|
-| `https://ghosttunes.pro` | Веб-плеер |
-| `https://ghosttunes.pro/api/v1/docs` | Swagger API |
-| `https://admin.ghosttunes.pro` | Панель администратора |
+| `https://ghosttune.pro` | Веб-плеер |
+| `https://ghosttune.pro/api/v1/docs` | Swagger API |
+| `https://admin.ghosttune.pro` | Панель администратора |

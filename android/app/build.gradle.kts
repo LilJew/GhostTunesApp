@@ -17,8 +17,8 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
-        buildConfigField("String", "BASE_URL", "\"https://ghosttunes.pro/api/v1/\"")
-        buildConfigField("String", "WS_URL", "\"wss://ghosttunes.pro/ws/player\"")
+        buildConfigField("String", "BASE_URL", "\"https://ghosttune.pro/api/v1/\"")
+        buildConfigField("String", "WS_URL", "\"wss://ghosttune.pro/ws/player\"")
     }
 
     buildTypes {

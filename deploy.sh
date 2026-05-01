@@ -124,9 +124,9 @@ chmod +x "$DEPLOY_DIR/deploy.sh" 2>/dev/null || true
 
 # Проверить наличие SSL-сертификата
 cd "$DEPLOY_DIR"
-if [[ ! -f "certbot/conf/live/ghosttunes.pro/fullchain.pem" ]]; then
+if [[ ! -f "certbot/conf/live/ghosttune.pro/fullchain.pem" ]]; then
   log "SSL-сертификат не найден. Получаю от Let's Encrypt..."
-  log "Нужно убедиться что DNS ghosttunes.pro и admin.ghosttunes.pro указывают на этот сервер."
+  log "Нужно убедиться что DNS ghosttune.pro и admin.ghosttune.pro указывают на этот сервер."
   echo ""
   read -rp "  Продолжить получение сертификата? [y/N]: " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
@@ -136,7 +136,7 @@ if [[ ! -f "certbot/conf/live/ghosttunes.pro/fullchain.pem" ]]; then
       -v "$(pwd)/certbot/www:/var/www/certbot" \
       -p 80:80 \
       certbot/certbot certonly --standalone \
-      -d ghosttunes.pro -d www.ghosttunes.pro -d admin.ghosttunes.pro \
+      -d ghosttune.pro -d www.ghosttune.pro -d admin.ghosttune.pro \
       --email "$le_email" --agree-tos --no-eff-email
     ok "Сертификат получен"
   else
@@ -168,9 +168,9 @@ fi
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Деплой завершён!"
-echo "  Плеер:    https://ghosttunes.pro"
-echo "  API docs: https://ghosttunes.pro/api/v1/docs"
-echo "  Admin:    https://admin.ghosttunes.pro"
+echo "  Плеер:    https://ghosttune.pro"
+echo "  API docs: https://ghosttune.pro/api/v1/docs"
+echo "  Admin:    https://admin.ghosttune.pro"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 ENDSSH
 
